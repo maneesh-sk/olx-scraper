@@ -1,10 +1,10 @@
 # OLX Scraper
 
-A robust and generic web scraper for OLX India built with Python and Selenium. This scraper can extract listings from any category on OLX with human-like behavior to avoid detection.
+A robust and generic web scraper for OLX India built with Python and Selenium. This scraper can extract listings from Motorcyles/Scooters categories on OLX with human-like behavior to avoid detection.
 
 ## Features
 
-- Generic scraping capability for any OLX category
+- Generic scraping capability
 - Human-like behavior (random scrolling, delays, mouse movements)
 - Robust error handling and retry mechanism
 - Detailed logging
