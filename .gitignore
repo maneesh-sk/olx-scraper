@@ -36,4 +36,13 @@ ENV/
 *.csv
 *.json
 chromedriver
-chromedriver.exe 
+chromedriver.exe
+
+# OLX Scraper specific
+*.csv
+*.log
+*_cookies.json
+
+# OS
+.DS_Store
+Thumbs.db 

@@ -95,7 +95,7 @@ class OLXScraper:
         self.csv_filename = f'olx_{self.category}_{timestamp}.csv'
         
         # Define headers based on common OLX listing attributes
-        self.csv_headers = ['title', 'price', 'details', 'location', 'listing_date', 'page_number']
+        self.csv_headers = ['title', 'price', 'year', 'kilometers', 'location', 'listing_date', 'page_number']
         
         # Create CSV file with headers
         with open(self.csv_filename, 'w', newline='', encoding='utf-8') as f:
@@ -195,22 +195,6 @@ class OLXScraper:
         except ValueError:
             return 0
 
-    def _extract_year_km(self, details_text: str) -> tuple:
-        """
-        Extract year and kilometers from the details text
-        Example: "2023 - 10,000 km" -> ("2023", "10000")
-        """
-        try:
-            year_match = re.search(r'\b(19|20)\d{2}\b', details_text)
-            km_match = re.search(r'(\d[\d,]*)\s*km', details_text.lower())
-            
-            year = year_match.group(0) if year_match else ''
-            km = re.sub(r'[^\d]', '', km_match.group(1)) if km_match else '0'
-            
-            return year, km
-        except Exception:
-            return '', '0'
-
     def wait_for_user_action(self, message: str) -> None:
         """Wait for user to perform an action and continue"""
         input(f"\n{message} Press Enter to continue...")
@@ -308,8 +292,24 @@ class OLXScraper:
             
             try:
                 details = listing_element.find_element(By.CSS_SELECTOR, 'div._21gnE[data-aut-id="itemSubTitle"]').text.strip()
+                # First remove commas from numbers (e.g., "12,017 km" -> "12017 km")
+                details = re.sub(r'(\d+),(\d+)', r'\1\2', details)
+                # Split details by separators while preserving "km" with its number
+                detail_parts = [d.strip() for d in re.split(r'\s*[-|]\s*', details) if d.strip()]
+                
+                # Initialize year and kilometers
+                year = ""
+                kilometers = ""
+                
+                # First part is typically the year
+                if len(detail_parts) > 0:
+                    year = detail_parts[0]
+                # Second part typically contains the kilometers
+                if len(detail_parts) > 1:
+                    kilometers = detail_parts[1]
             except:
-                details = ""
+                year = ""
+                kilometers = ""
             
             try:
                 # Updated selector for location and date
@@ -331,7 +331,8 @@ class OLXScraper:
             data = {
                 'title': title,
                 'price': price,
-                'details': details,
+                'year': year,
+                'kilometers': kilometers,
                 'location': location,
                 'listing_date': listing_date
             }
@@ -340,7 +341,8 @@ class OLXScraper:
             self.save_to_csv(data, page_number)
             
             # Enhanced logging with all important details
-            logger.info(f"Scraped: {data['title']} - ₹{data['price']:,} ({data['location']}, {data['listing_date']})")
+            details_str = ' | '.join(filter(None, [year, kilometers]))
+            logger.info(f"Scraped: {data['title']} - ₹{data['price']:,} ({details_str}) ({data['location']}, {data['listing_date']})")
             
             return data
         except Exception as e:
