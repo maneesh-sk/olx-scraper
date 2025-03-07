@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+pandas
+lxml
+selenium>=4.15.2
+webdriver-manager>=4.0.1
+typing-extensions>=4.8.0
